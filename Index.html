@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Video Audio Vidireccional</title>
+    <style>
+        html, body { 
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #000;
+            position: fixed; 
+            font-family: sans-serif;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* Botón de audio estilo Bytecomtec */
+        #mute-btn {
+            position: absolute;
+            bottom: 80px; 
+            right: 20px;
+            z-index: 9999; 
+            background: orange;
+            color: black;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+            display: none; /* Se oculta al principio */
+        }
+
+        /* Botón Play Rojo Unificado */
+        .play-overlay {
+            position: absolute;
+            width: 90px;
+            height: 60px;
+            /* Usamos un color sólido sin transparencias extremas para evitar el naranja */
+            background-color: #FF0000 !important; 
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            /* Evita que el móvil le dé su propio estilo */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* Triángulo blanco */
+        .play-triangle {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 25px solid #FFFFFF !important;
+            margin-left: 5px;
+        }
+
+        /* Triángulo blanco del Play */
+        .play-triangle {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 25px solid white;
+            margin-left: 5px; /* Ajuste para centrar visualmente */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container" id="container" onclick="togglePlay(event)">
+        <video id="miVideo" 
+               poster="miniatura.jpg" 
+               muted 
+               playsinline 
+               controls 
+               controlsList="nodownload">
+            <source src="Audio Bidireccional.mp4" type="video/mp4">
+            Tu navegador no soporta el video.
+        </video>
+
+        <div id="play-icon" class="play-overlay">
+            <div class="play-triangle"></div>
+        </div>
+
+        <button id="mute-btn" onclick="toggleMute(event)">🔈 ACTIVAR AUDIO</button>
+    </div>
+
+    <script>
+
+        const video = document.getElementById('miVideo');
+        const btnAudio = document.getElementById('mute-btn');
+        const playIcon = document.getElementById('play-icon');
+
+        // Función para reproducir al tocar el contenedor
+        function togglePlay(event) {
+            if (event.target.id === 'mute-btn') return;
+
+            if (video.paused || video.ended) {
+                video.play();
+                playIcon.style.display = 'none';
+                // Solo mostramos el botón de audio si el video está silenciado
+                if(video.muted) btnAudio.style.display = 'block';
+            } else {
+                video.pause();
+                playIcon.style.display = 'flex';
+            }
+        }
+
+        // Función de Audio: ACTIVA EL AUDIO Y DESAPARECE EL BOTÓN
+        function toggleMute(event) {
+            // 1. Activamos el sonido
+            video.muted = false;
+            
+            // 2. Desaparecemos el botón por completo
+            btnAudio.style.display = 'none'; 
+            
+            // Opcional: Si el video estaba en pausa por el clic, le damos play
+            video.play();
+        }
+
+        // Al terminar el video, reiniciamos todo
+        video.onended = () => {
+            video.load(); 
+            playIcon.style.display = 'flex'; 
+            btnAudio.style.display = 'none'; // Aseguramos que no se vea el botón al final
+        };
+
+        video.onplay = () => { 
+            playIcon.style.display = 'none'; 
+            // Si el video inicia y está mudo, mostramos el botón de activar
+            if(video.muted) btnAudio.style.display = 'block';
+        };
+
+        // EVENTO CRÍTICO: Detectar el final del video
+        video.onended = () => {
+            // 1. Cargamos el video de nuevo (esto muestra el poster)
+            video.load(); 
+            // 2. Volvemos a mostrar el botón Play Rojo
+            playIcon.style.display = 'flex'; 
+            // 3. Ocultamos el botón de audio
+            btnAudio.style.display = 'none'; 
+        };
+
+        // Si el usuario usa controles nativos:
+        video.onplay = () => { playIcon.style.display = 'none'; btnAudio.style.display = 'block'; };
+        video.onpause = () => { playIcon.style.display = 'flex'; };
+
+    </script>
+</body>
+</html>
